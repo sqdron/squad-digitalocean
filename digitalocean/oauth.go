@@ -21,11 +21,8 @@ func (p *digitalOcean) Name() string {
 	return "digitalocean"
 }
 
-func (p *digitalOcean) OpenSession(state string) (*oauth.Session, error) {
-	session := &oauth.Session{}
-	session.AuthURL = p.config.AuthCodeURL(state)
-	session.ID = state
-	return session, nil
+func (p *digitalOcean) GetAccessUrl(state string) (string, error) {
+	return p.config.AuthCodeURL(state), nil
 }
 
 func (p *digitalOcean) Authorize(session *oauth.Session, code string) (string, error) {
