@@ -4,7 +4,6 @@ import (
 	"golang.org/x/oauth2"
 	"github.com/sqdron/squad-oauth/oauth"
 	"errors"
-	"time"
 	"github.com/sqdron/squad/util"
 )
 
@@ -13,18 +12,9 @@ const (
 	tokenURL string = "https://cloud.digitalocean.com/v1/oauth/token"
 )
 
-type Session struct {
-	Code         string
-	State        string
-	AccessToken  string
-	RefreshToken string
-	ExpiresAt    time.Time
-}
 
-type IAuth interface {
-	GetAccessUrl() (string, error)
-	Authorize(s *Session) (*Session, error)
-}
+
+
 
 type digitalOcean struct {
 	config *oauth2.Config
@@ -38,7 +28,7 @@ func (p *digitalOcean) GetAccessUrl() (string, error) {
 	return p.config.AuthCodeURL(util.GenerateString(7)), nil
 }
 
-func (p *digitalOcean) Authorize(s *Session) (*Session, error) {
+func (p *digitalOcean) Authorize(s *oauth.Session) (*oauth.Session, error) {
 	token, err := p.config.Exchange(oauth2.NoContext, s.Code)
 	if err != nil {
 		return nil, err
@@ -72,7 +62,7 @@ func (p *digitalOcean) RefreshTokenAvailable() bool {
 	return true
 }
 
-func OAuth(clientKey, clientSecret, callbackURL string, scopes ...string) IAuth {
+func OAuth(clientKey, clientSecret, callbackURL string, scopes ...string) oauth.IAuth {
 	config := &oauth2.Config{
 		ClientID:     clientKey,
 		ClientSecret: clientSecret,

@@ -1,8 +1,9 @@
 package digitalocean
 
+import "github.com/sqdron/squad-oauth/oauth"
 
 type digitalocean struct{
-	OAuth IAuth
+	OAuth oauth.IAuth
 }
 
 type IDigitalOcean interface{
