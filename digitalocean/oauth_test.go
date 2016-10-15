@@ -8,7 +8,7 @@ import (
 
 func Test_Authenticate(t *testing.T) {
 	Convey("Authenticate", t, func() {
-		provider := DigitalOcean("digitalocean_key", "secret", "http://test.com/auth", "read", "write")
+		provider := OAuth("digitalocean_key", "secret", "http://test.com/auth", "read", "write")
 		url, err :=provider.GetAccessUrl("test_state")
 		So(err, ShouldBeNil)
 		So(url, ShouldContainSubstring, "cloud.digitalocean.com/v1/oauth/authorize")

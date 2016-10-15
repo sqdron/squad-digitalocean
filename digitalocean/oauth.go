@@ -4,14 +4,27 @@ import (
 	"golang.org/x/oauth2"
 	"github.com/sqdron/squad-oauth/oauth"
 	"errors"
-	"fmt"
+	"time"
+	"github.com/sqdron/squad/util"
 )
 
 const (
 	authURL string = "https://cloud.digitalocean.com/v1/oauth/authorize"
 	tokenURL string = "https://cloud.digitalocean.com/v1/oauth/token"
-	//endpointProfile string = "https://api.digitalocean.com/v2/account"
 )
+
+type Session struct {
+	Code         string
+	State        string
+	AccessToken  string
+	RefreshToken string
+	ExpiresAt    time.Time
+}
+
+type IAuth interface {
+	GetAccessUrl() (string, error)
+	Authorize(s *Session) (*Session, error)
+}
 
 type digitalOcean struct {
 	config *oauth2.Config
@@ -21,27 +34,24 @@ func (p *digitalOcean) Name() string {
 	return "digitalocean"
 }
 
-func (p *digitalOcean) GetAccessUrl(state string) (string, error) {
-	return p.config.AuthCodeURL(state), nil
+func (p *digitalOcean) GetAccessUrl() (string, error) {
+	return p.config.AuthCodeURL(util.GenerateString(7)), nil
 }
 
-func (p *digitalOcean) Authorize(session *oauth.Session, code string) (string, error) {
-	fmt.Println(session)
-	fmt.Println(p.config)
-	fmt.Println(session.ID)
-	token, err := p.config.Exchange(oauth2.NoContext, code)
+func (p *digitalOcean) Authorize(s *Session) (*Session, error) {
+	token, err := p.config.Exchange(oauth2.NoContext, s.Code)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if !token.Valid() {
-		return "", errors.New("Invalid token received from provider")
+		return nil, errors.New("Invalid token received from provider")
 	}
 
-	session.AccessToken = token.AccessToken
-	session.RefreshToken = token.RefreshToken
-	session.ExpiresAt = token.Expiry
-	return token.AccessToken, err
+	s.AccessToken = token.AccessToken
+	s.RefreshToken = token.RefreshToken
+	s.ExpiresAt = token.Expiry
+	return s, err
 }
 
 func (p *digitalOcean) GetAccount(s *oauth.Session) (*oauth.Account, error) {
@@ -62,7 +72,7 @@ func (p *digitalOcean) RefreshTokenAvailable() bool {
 	return true
 }
 
-func DigitalOcean(clientKey, clientSecret, callbackURL string, scopes ...string) oauth.IProvider {
+func OAuth(clientKey, clientSecret, callbackURL string, scopes ...string) IAuth {
 	config := &oauth2.Config{
 		ClientID:     clientKey,
 		ClientSecret: clientSecret,
@@ -73,5 +83,5 @@ func DigitalOcean(clientKey, clientSecret, callbackURL string, scopes ...string)
 		Scopes: scopes}
 
 	p := &digitalOcean{config}
-	return oauth.NewProvider(p)
+	return p
 }
