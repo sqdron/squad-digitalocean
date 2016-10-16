@@ -5,6 +5,7 @@ import (
 	"github.com/sqdron/squad-oauth/oauth"
 	"errors"
 	"github.com/sqdron/squad/util"
+	"fmt"
 )
 
 const (
@@ -48,14 +49,17 @@ func (p *digitalOcean) GetAccount(s *oauth.Session) (*oauth.Account, error) {
 	return nil, errors.New("Not implemented")
 }
 
-func (p *digitalOcean) RefreshToken(refreshToken string) (*oauth2.Token, error) {
-	token := &oauth2.Token{RefreshToken: refreshToken}
+func (p *digitalOcean) Refresh(s *oauth.Session) (*oauth.Session, error) {
+	token := &oauth2.Token{RefreshToken: s.RefreshToken}
 	ts := p.config.TokenSource(oauth2.NoContext, token)
 	newToken, err := ts.Token()
 	if err != nil {
 		return nil, err
 	}
-	return newToken, err
+	s.AccessToken = newToken.AccessToken
+	s.RefreshToken = newToken.RefreshToken
+	s.ExpiresAt = newToken.Expiry
+	return s, nil
 }
 
 func (p *digitalOcean) RefreshTokenAvailable() bool {
@@ -71,7 +75,7 @@ func OAuth(clientKey, clientSecret, callbackURL string, scopes ...string) oauth.
 			AuthURL:  authURL,
 			TokenURL: tokenURL},
 		Scopes: scopes}
-
+	fmt.Println(config)
 	p := &digitalOcean{config}
 	return p
 }
