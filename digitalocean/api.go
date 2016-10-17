@@ -10,6 +10,7 @@ type digitalocean struct {
 	Unit  cloud.ICloudUnit
 	Image cloud.IImage
 	Plan  cloud.ICloudPlan
+	Key   cloud.ICloudKey
 }
 
 type IDigitalOcean interface {
@@ -17,5 +18,9 @@ type IDigitalOcean interface {
 }
 
 func New(clientKey, clientSecret, callbackURL string) *digitalocean {
-	return &digitalocean{OAuth:OAuth(clientKey, clientSecret, callbackURL, "read", "write"), Unit:UnitService(), Image:ImageService(), Plan:PlanService()}
+	return &digitalocean{OAuth:OAuth(clientKey, clientSecret, callbackURL, "read", "write"),
+		Unit:UnitService(),
+		Image:ImageService(),
+		Plan:PlanService(),
+		Key:KeysService()}
 }

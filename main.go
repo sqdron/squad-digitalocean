@@ -26,5 +26,8 @@ func main() {
 	client.Api.Route("cloud.digitalocean.unit.list").Action(cloud.Unit.List)
 	client.Api.Route("cloud.digitalocean.image.list").Action(cloud.Image.List)
 	client.Api.Route("cloud.digitalocean.plan.list").Action(cloud.Plan.List)
+
+	client.Api.Route("cloud.digitalocean.key.list").Action(cloud.Key.List)
+	client.Api.Route("cloud.digitalocean.key.create").Action(cloud.Key.Create)
 	client.Activate()
 }

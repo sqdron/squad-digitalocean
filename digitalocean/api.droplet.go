@@ -19,10 +19,21 @@ func UnitService() cloud.ICloudUnit {
 }
 
 func (d *droplet) Create(r *cloud.UnitCreateRequest) (*cloud.CloudUnit, error) {
+	keys := []godo.DropletCreateSSHKey{}
+	//if (len(r.Keys) > 0) {
+	//	for _, k := range r.Keys {
+	//		keys = append(keys, godo.DropletCreateSSHKey{ID:k})
+	//	}
+	//}
+	if (r.Key != 0) {
+		keys = append(keys, godo.DropletCreateSSHKey{ID:r.Key})
+	}
+	fmt.Println(keys)
 	createRequest := &godo.DropletCreateRequest{
 		Name:   r.Name,
 		Region: r.Region,
 		Size:   r.Size,
+		SSHKeys:keys,
 		Image: godo.DropletCreateImage{
 			Slug: r.Image,
 		},
@@ -32,7 +43,7 @@ func (d *droplet) Create(r *cloud.UnitCreateRequest) (*cloud.CloudUnit, error) {
 	fmt.Println(droplet)
 	fmt.Println(req)
 	fmt.Println(err)
-	if (err != nil){
+	if (err != nil) {
 		return nil, err
 	}
 	return toUnit(droplet), nil
@@ -40,11 +51,11 @@ func (d *droplet) Create(r *cloud.UnitCreateRequest) (*cloud.CloudUnit, error) {
 
 func (d *droplet) List(r *cloud.TokenSource) ([]*cloud.CloudUnit, error) {
 	droplets, _, err := d.client(r.Token).List(&godo.ListOptions{Page: 1, PerPage: 10})
-	if (err != nil){
+	if (err != nil) {
 		return nil, err
 	}
 	units := []*cloud.CloudUnit{}
-	for _, d := range droplets{
+	for _, d := range droplets {
 		units = append(units, toUnit(&d))
 	}
 	return units, nil
